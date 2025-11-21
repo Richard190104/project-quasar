@@ -2,9 +2,9 @@
 <template>
   <q-page padding class="bg-grey-2 flex flex-center">
 
-    <q-card flat class="q-pa-xl bg-white rounded-borders shadow-2 flex justify-center align-center" style="height: 700px; max-height: 95%; min-width: 80%;">
+    <q-card flat class="q-pa-xl bg-white rounded-borders shadow-2 flex justify-center align-center">
 
-      <div class="row q-col-gutter-xl items-start">
+      <div class="row q-col-gutter-xl items-start" >
 
         <!-- LEFT SECTION – USER INFO -->
         <div class="col-12 col">
