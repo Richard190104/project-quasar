@@ -42,7 +42,7 @@ export default defineConfig((/* ctx */) => {
         vueShim: true,
         // extendTsConfig (tsConfig) {}
       },
-
+      publicPath: '/project-quasar/',
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
