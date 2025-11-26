@@ -2,42 +2,36 @@
   <q-page padding class="bg-grey-2 flex justify-center items-start">
     <q-card
       flat
-      class="q-pa-xl bg-white rounded-borders shadow-2 flex justify-center align-center"
+      class="q-pa-xl rounded-borders shadow-2 flex justify-center align-center app-card"
       style="width: 1200px; max-width: 1200px"
     >
       <div class="row q-col-gutter-xl items-start">
-        <!-- LEFT SECTION – USER INFO -->
         <div class="col-12 col">
           <div class="row items-center q-mb-md">
-            <div
-              class="bg-blue-1 text-primary flex flex-center rounded-circle"
-              style="font-size: 22px; font-weight: 600"
-            >
-              {{ userId }}
-            </div>
+            <q-avatar size="56px" class="user-badge bg-blue-1">
+              <div class="user-id">{{ userId }}</div>
+            </q-avatar>
 
-            <div class="q-ml-md">
+            <div class="q-ml-md user-info">
               <div class="text-body1 text-grey-8">Prihlásený používateľ</div>
               <div class="text-subtitle1"><b>ID:</b> {{ userId }}</div>
-              <div v-if="userEmail">
+              <div v-if="userEmail" class="user-email-row">
                 <b>email:</b>
-                <p class="inline-block bg-gray-1 text-gray-8 q-pa-xs rounded-borders">
-                  {{ userEmail }}
-                </p>
+                <q-chip dense class="q-ml-sm" outline>{{ userEmail }}</q-chip>
                 <q-icon
                   name="edit"
-                  class="cursor-pointer"
+                  class="cursor-pointer q-ml-sm"
                   @click="displayEmailChangePopup = true"
-                ></q-icon>
+                />
               </div>
               <div v-else class="text-grey-7">
                 <b>Email: </b>
-                <p
-                  class="inline-block bg-red-1 text-red-8 q-pa-xs rounded-borders cursor-pointer"
+                <q-chip
+                  dense
+                  class="q-ml-sm bg-red-1 text-red-8 cursor-pointer"
                   @click="displayEmailChangePopup = true"
+                  >Zadať email</q-chip
                 >
-                  Zadať email
-                </p>
               </div>
             </div>
           </div>
@@ -68,22 +62,21 @@
             </q-card>
           </q-dialog>
           <div class="text-subtitle2 text-grey-7 q-mb-sm">Vaše termíny</div>
-
-          <div
-            v-if="selectedDate?.date !== '' && selectedDate?.date != null"
-            class="bg-green-1 q-pa-sm rounded-borders text-body1 text-green-8"
-          >
-            {{ selectedDate?.date }}
-          </div>
-          <div
-            v-if="selectedDate2?.date !== '' && selectedDate2?.date != null"
-            class="bg-green-1 q-pa-sm rounded-borders text-body1 text-green-8 q-mt-sm"
-          >
-            {{ selectedDate2?.date }}
-          </div>
-
-          <div v-else class="bg-red-1 q-pa-sm rounded-borders text-red-8 text-body1">
-            Termíny neboli vybrané.
+          <div class="q-gutter-sm selected-dates">
+            <q-chip v-if="selectedDate?.date" dense color="green-1" text-color="green-8">{{
+              selectedDate?.date
+            }}</q-chip>
+            <q-chip
+              v-if="selectedDate2?.date"
+              dense
+              class="q-ml-sm"
+              color="green-1"
+              text-color="green-8"
+              >{{ selectedDate2?.date }}</q-chip
+            >
+            <div v-if="!selectedDate?.date && !selectedDate2?.date" class="text-grey-7 q-mt-sm">
+              Termíny neboli vybrané.
+            </div>
           </div>
         </div>
         <q-dialog
@@ -102,43 +95,45 @@
             </div>
           </q-card>
         </q-dialog>
-        <!-- MIDDLE SECTION – AVAILABLE DATES -->
         <div class="col-12 col-md-6 dates-scroll">
           <div class="text-h6 q-mb-sm">Dostupné termíny</div>
           <span>1. termín</span>
           <div v-if="allDates.length === 0" class="text-grey-7">Žiadne dostupné termíny.</div>
           <q-list bordered class="rounded-borders">
             <q-expansion-item
-              v-for="(items, day) in groupedDates"
+              v-for="(items, day) in filteredDays"
               :key="day"
-              :label="formatDate(day, false)"
+              :label="formatDate(<string>day, false)"
               icon="event"
+              group="datesAccordion"
+              switch-toggle
               expand-separator
               dense
-              group="days"
+              @show="onDayOpened(<string>day)"
+              @hide="onDayClosed(<string>day)"
             >
               <q-list padding>
                 <q-item
-                  v-for="item in items"
+                  v-for="item in visibleFirstTermItems(<dateSelection[]>items)"
                   :key="String(item.id)"
                   clickable
                   @click="selectDate(item)"
                   :active="clickedDate && clickedDate.id === item.id"
-                  active-class="bg-blue-2 text-blue-10"
-                  class="rounded-borders q-my-xs"
-                  style="border: 1px solid #ccc"
+                  active-class="item-active"
+                  class="rounded-borders q-my-xs date-item"
                 >
                   <q-item-section avatar>
                     <q-icon name="schedule" />
                   </q-item-section>
 
                   <q-item-section>
-                    {{ item.date }}
+                    <div class="date-main">{{ item.date }}</div>
                   </q-item-section>
                 </q-item>
               </q-list>
             </q-expansion-item>
           </q-list>
+
           <span v-if="clickedDate?.date != null">2. termín</span>
           <transition name="expand">
             <div v-if="dates2.length === 0 && clickedDate?.date != null" class="text-grey-7">
@@ -153,9 +148,8 @@
                 clickable
                 @click="selectDate2(d2)"
                 :active="clickedDate2 && clickedDate2.id === d2.id"
-                active-class="bg-blue-1"
-                class="q-my-sm rounded-borders border-gray-3"
-                style="border: 1px solid gray"
+                active-class="item-active"
+                class="q-my-sm rounded-borders date-item"
               >
                 <q-item-section avatar>
                   <q-icon name="schedule" />
@@ -191,7 +185,6 @@
           </q-card>
         </q-dialog>
 
-        <!-- RIGHT SECTION – REVIEW & SUBMIT -->
         <div class="col-12 col-md-6">
           <div class="bg-grey-1 q-pa-md rounded-borders q-mb-lg">
             <div class="text-subtitle1 q-mb-sm"><b>Výber</b></div>
@@ -210,17 +203,18 @@
             <div class="q-mt-md">
               <div class="text-subtitle2 text-grey-7">Vybraný:</div>
 
-              <div v-if="clickedDate" class="text-body1 text-primary q-mt-xs mb-sm">
-                {{ clickedDate?.date }} <br />
+              <div class="selected-preview q-mt-xs mb-sm">
+                <q-chip v-if="clickedDate" color="primary" text-color="white">{{
+                  clickedDate?.date
+                }}</q-chip>
+                <q-chip v-else dense outline>-</q-chip>
               </div>
-              <div v-else class="bg-red-1 justify-center align-center text-center q-mt-xs mb-sm">
-                -
-              </div>
-              <div v-if="clickedDate2" class="text-body1 text-primary q-mt-xs mb-sm">
-                {{ clickedDate2?.date }}
-              </div>
-              <div v-else class="bg-red-1 justify-center align-center text-center q-mt-xs mb-sm">
-                -
+
+              <div class="selected-preview q-mt-xs mb-sm">
+                <q-chip v-if="clickedDate2" color="primary" text-color="white">{{
+                  clickedDate2?.date
+                }}</q-chip>
+                <q-chip v-else dense outline>-</q-chip>
               </div>
             </div>
           </div>
@@ -236,7 +230,7 @@
             color="primary"
             size="lg"
             unelevated
-            class="full-width"
+            class="full-width primary-btn"
             @click="handleDateSelection"
           />
         </div>
@@ -270,6 +264,7 @@ export default defineComponent({
       customAlertMessage: '' as string,
       allDates: [] as dateSelection[],
       openDay: null as string | null,
+      selectedDay: null as string | null,
     };
   },
 
@@ -279,6 +274,25 @@ export default defineComponent({
   },
 
   methods: {
+    onDayClosed(day: string) {
+      if (this.selectedDay === day) {
+        this.selectedDay = null;
+        this.clickedDate = null;
+        this.clickedDate2 = null;
+        this.dates2 = [];
+      }
+    },
+    onDayOpened(day: string) {
+      this.selectedDay = day;
+      this.clickedDate = null;
+      this.clickedDate2 = null;
+      this.dates2 = [];
+    },
+
+    resetSecondDate() {
+      this.clickedDate2 = null;
+      this.clickedDate = null;
+    },
     toggleDay(day: string) {
       this.openDay = this.openDay === day ? null : day;
     },
@@ -320,14 +334,22 @@ export default defineComponent({
           console.error('Error saving email:', error);
         });
     },
+    visibleFirstTermItems(items: dateSelection[]) {
+      if (!this.clickedDate) return items;
+      return items.filter((i) => i.id === this.clickedDate!.id);
+    },
     selectDate(d: dateSelection) {
       this.clickedDate2 = null;
+
+      this.selectedDay = new Date(d.raw!).toISOString().split('T')[0] || '';
+
       if (this.clickedDate == d) {
         this.clickedDate = null;
-
         return;
       }
+
       this.clickedDate = d;
+
       this.dates2 = this.allDates.filter((date) => {
         if (!this.clickedDate) return false;
 
@@ -479,37 +501,144 @@ export default defineComponent({
         {} as Record<string, dateSelection[]>,
       );
     },
+    filteredDays() {
+      if (!this.selectedDay) return this.groupedDates;
+
+      return {
+        [this.selectedDay]: this.groupedDates[this.selectedDay],
+      };
+    },
   },
 });
 </script>
 
 <style>
+:root {
+  --bg: #f7f9fc;
+  --surface: #ffffff;
+  --muted: #475569;
+  --muted-2: #6b7280;
+  --primary: #2563eb;
+  --primary-weak: rgba(37, 99, 235, 0.06);
+  --success: #059669;
+  --danger: #dc2626;
+  --border: #e6e9ef;
+}
+
+.app-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 252, 255, 0.96));
+  color: var(--muted);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 36px rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: var(--primary) !important;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.04);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.user-id {
+  font-size: clamp(12px, 1.05rem, 18px);
+  line-height: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: calc(564x + 8ch);
+  display: inline-block;
+}
+
+.selected-dates .q-chip {
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.dates-list {
+  padding: 6px;
+}
+.date-item {
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+.date-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+}
+.item-active {
+  background: var(--primary-weak) !important;
+  border: 1px solid rgba(37, 99, 235, 0.12) !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.06);
+}
+.date-main {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dates-scroll {
+  transition: all 0.28s ease;
+}
+.dates-wrap {
+  overflow: hidden;
+}
+
+.selected-preview q-chip {
+  margin-right: 8px;
+}
+
+.primary-btn {
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.06);
+}
+.primary-btn:hover {
+  transform: translateY(-2px);
+}
+
+.text-h6::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.24), rgba(5, 150, 105, 0.14));
+}
+
+:focus {
+  outline: 3px solid rgba(37, 99, 235, 0.1);
+  outline-offset: 2px;
+}
+
 .q-item {
   white-space: normal !important;
 }
-.dates-scroll {
-  transition: all 0.3s ease;
-}
+
 .expand-enter-active,
 .expand-leave-active {
   transition:
-    max-height 0.35s ease,
-    opacity 0.2s ease;
+    max-height 0.32s ease,
+    opacity 0.18s ease;
 }
-
 .expand-enter-from,
 .expand-leave-to {
   max-height: 0;
   opacity: 0;
 }
-
 .expand-enter-to,
 .expand-leave-from {
   max-height: 500px;
   opacity: 1;
-}
-
-.dates-wrap {
-  overflow: hidden;
 }
 </style>
