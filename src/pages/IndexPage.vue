@@ -105,15 +105,16 @@
           <q-list bordered class="rounded-borders">
             <q-expansion-item
               v-for="(items, day) in filteredDays"
-              :key="day"
-              :label="formatDate(<string>day, false)"
+              :key="String(day)"
+              :label="formatDate(String(day), false)"
+              :value="openedExpansion === String(day)"
+              @update:model-value="(val) => (openedExpansion = val ? String(day) : null)"
               icon="event"
-              group="datesAccordion"
               switch-toggle
               expand-separator
               dense
-              @show="onDayOpened(<string>day)"
-              @hide="onDayClosed(<string>day)"
+              @show="onDayOpened(String(day))"
+              @hide="onDayClosed(String(day))"
             >
               <q-list padding>
                 <q-item
@@ -268,6 +269,7 @@ export default defineComponent({
       allDates: [] as dateSelection[],
       openDay: null as string | null,
       selectedDay: null as string | null,
+      openedExpansion: null as string | null,
     };
   },
 
@@ -426,6 +428,8 @@ export default defineComponent({
             this.selectedDate2 = this.clickedDate2;
             this.clickedDate = null;
             this.clickedDate2 = null;
+            this.selectedDay = null;
+            this.openedExpansion = null;
             this.getDates();
             this.showInfo = true;
             setTimeout(() => {
