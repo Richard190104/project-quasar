@@ -7,7 +7,6 @@
         v-model="userId"
         label="Zadajte vaše ID"
         class="q-mb-md no-spin"
-        type="number"
         :error="success === false"
         error-message="ID nebolo nájdené"
         color="primary"

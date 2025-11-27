@@ -247,7 +247,7 @@ export default defineComponent({
 
   data() {
     return {
-      userId: null as number | null,
+      userId: null as string | null,
       selectedDate: null as dateSelection | null,
       dates2: [] as dateSelection[],
       clickedDate: null as dateSelection | null,
@@ -271,7 +271,7 @@ export default defineComponent({
 
   created() {
     const id = sessionStorage.getItem('userId');
-    this.userId = Number(id);
+    this.userId = id;
   },
 
   methods: {
