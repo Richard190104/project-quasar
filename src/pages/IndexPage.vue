@@ -35,6 +35,9 @@
               </div>
             </div>
           </div>
+          <q-chip v-if="!userEmail"
+            >Ak si prajete dostať potvrdenie o výbere termínov, vyplnte prosím email.</q-chip
+          >
 
           <q-dialog v-model="displayEmailChangePopup">
             <q-card class="q-pa-lg" style="min-width: 350px">
