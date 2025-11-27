@@ -18,27 +18,23 @@
               <div v-if="userEmail" class="user-email-row">
                 <b>email:</b>
                 <q-chip dense class="q-ml-sm" outline>{{ userEmail }}</q-chip>
-                <q-icon
-                  name="edit"
-                  class="cursor-pointer q-ml-sm"
-                  @click="displayEmailChangePopup = true"
-                />
+                <q-icon name="edit" class="cursor-pointer q-ml-sm" @click="openEmailPopup()" />
               </div>
               <div v-else class="text-grey-7">
                 <b>Email: </b>
                 <q-chip
                   dense
+                  clickable
                   class="q-ml-sm bg-red-1 text-red-8 cursor-pointer"
-                  @click="displayEmailChangePopup = true"
+                  @click="openEmailPopup()"
                   >Zadať email</q-chip
                 >
               </div>
             </div>
           </div>
-          <q-chip v-if="!userEmail"
-            >Ak si prajete dostať potvrdenie o výbere termínov, vyplnte prosím email.</q-chip
+          <q-chip v-if="!userEmail" class="bg-red-1 text-red-8 mb-sm">
+            Bez vyplnenia emailu nie je možné vybrať termín.</q-chip
           >
-
           <q-dialog v-model="displayEmailChangePopup">
             <q-card class="q-pa-lg" style="min-width: 350px">
               <div class="text-h6 q-mb-md">Zadajte váš email</div>
@@ -259,7 +255,6 @@ export default defineComponent({
       showInfo: false,
       clickedDate2: null as dateSelection | null,
       selectedDate2: null as dateSelection | null,
-      userEmail: sessionStorage.getItem('email') || '',
       displayEmailChangePopup: false,
       emailInput: '' as string,
       emailError: false as boolean,
@@ -270,6 +265,7 @@ export default defineComponent({
       openDay: null as string | null,
       selectedDay: null as string | null,
       openedExpansion: null as string | null,
+      userEmail: '' as string,
     };
   },
 
@@ -279,6 +275,11 @@ export default defineComponent({
   },
 
   methods: {
+    openEmailPopup() {
+      console.log('Opening email popup');
+      this.emailInput = this.userEmail || '';
+      this.displayEmailChangePopup = true;
+    },
     onDayClosed(day: string) {
       if (this.selectedDay === day) {
         this.selectedDay = null;
@@ -406,6 +407,10 @@ export default defineComponent({
         this.createAlert('Je potrebné vybrať aj druhý termín.');
         return;
       }
+      if (!this.userEmail) {
+        this.createAlert('Je potrebné zadať email pre potvrdenie termínu.');
+        return;
+      }
 
       fetch('https://backendday.vercel.app/api/selectDate', {
         method: 'POST',
@@ -492,6 +497,8 @@ export default defineComponent({
   },
 
   mounted() {
+    this.userEmail = sessionStorage.getItem('email') || '';
+
     this.getDates();
   },
   computed: {
@@ -562,7 +569,7 @@ export default defineComponent({
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  max-width: calc(564x + 8ch);
+  max-width: calc(56px + 8ch);
   display: inline-block;
 }
 
