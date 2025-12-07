@@ -289,16 +289,21 @@ export default defineComponent({
         this.clickedDate = null;
         this.clickedDate2 = null;
         this.dates2 = [];
+
+        this.getDates();
         return;
       }
+      this.allDates = [];
+      this.openedExpansion = null;
+      this.selectedDay = null;
       const emptyDate: dateSelection = {
-        id: -1,
+        id: 560,
         date: 'Ozveme sa vám s ďalšími termínmi.',
         raw: new Date('2031-01-08T00:00:00.000Z'),
         block: 0,
       };
       const emptyDate2: dateSelection = {
-        id: -2,
+        id: 561,
         date: 'Ozveme sa vám s ďalšími termínmi.',
         raw: new Date('2031-01-16T00:00:00.000Z'),
         block: 0,
@@ -310,7 +315,6 @@ export default defineComponent({
       }
     },
     openEmailPopup() {
-      console.log('Opening email popup');
       this.emailInput = this.userEmail || '';
       this.displayEmailChangePopup = true;
     },
@@ -504,25 +508,46 @@ export default defineComponent({
                 new Date(a.date).getTime() - new Date(b.date).getTime(),
             );
           }
+          data.dates = data.dates.filter((d: dateSelection) => {
+            const dateYear = new Date(d.date).getFullYear();
+            return dateYear <= 2028;
+          });
           this.allDates = data.dates.map((d: dateSelection) => ({
             id: d.id,
             date: this.formatDate(d.date),
             raw: d.date,
             block: d.block,
           })) as dateSelection[];
-          console.log('All dates:');
-          console.log(this.allDates);
           if (data.selectedDates) {
-            this.selectedDate = {
-              id: null,
-              date: data.selectedDates.date1 ? this.formatDate(data.selectedDates.date1) : '',
-              block: data.selectedDates.block1 ? data.selectedDates.block1 : 0,
-            };
-            this.selectedDate2 = {
-              id: null,
-              date: data.selectedDates.date2 ? this.formatDate(data.selectedDates.date2) : '',
-              block: data.selectedDates.block2 ? data.selectedDates.block2 : 0,
-            };
+            if (
+              new Date(data.selectedDates.date1).getFullYear() >= 2029 ||
+              new Date(data.selectedDates.date2).getFullYear() >= 2029
+            ) {
+              console.log('Setting default contact message for dates');
+
+              this.selectedDate = {
+                id: null,
+                date: 'Ohľadom termínu vás budeme kontaktovať.',
+                block: data.selectedDates.block1 ? data.selectedDates.block1 : 0,
+              };
+              this.selectedDate2 = {
+                id: null,
+                date: 'Ohľadom termínu vás budeme kontaktovať.',
+                block: data.selectedDates.block2 ? data.selectedDates.block2 : 0,
+              };
+              console.log(this.selectedDate, this.selectedDate2);
+            } else {
+              this.selectedDate = {
+                id: null,
+                date: data.selectedDates.date1 ? this.formatDate(data.selectedDates.date1) : '',
+                block: data.selectedDates.block1 ? data.selectedDates.block1 : 0,
+              };
+              this.selectedDate2 = {
+                id: null,
+                date: data.selectedDates.date2 ? this.formatDate(data.selectedDates.date2) : '',
+                block: data.selectedDates.block2 ? data.selectedDates.block2 : 0,
+              };
+            }
           }
         })
         .catch((error) => {
@@ -541,10 +566,8 @@ export default defineComponent({
       return this.allDates.reduce(
         (acc, item) => {
           const key = new Date(item.raw!).toISOString().split('T')[0];
-          console.log(key);
           if (!acc[<string>key]) acc[<string>key] = [];
           acc[<string>key]!.push(item);
-          console.log(acc);
           return acc;
         },
         {} as Record<string, dateSelection[]>,
