@@ -234,6 +234,14 @@
             @click="handleDateSelection"
           />
         </div>
+        <div class="q-mb-md">
+          <q-checkbox
+            v-model="termsNotSuitable"
+            label="Termíny mi nevyhovujú"
+            @click="chooseEmptyDate"
+          />
+        </div>
+        <div v-if="termsNotSuitable"></div>
       </div>
     </q-card>
   </q-page>
@@ -266,6 +274,7 @@ export default defineComponent({
       selectedDay: null as string | null,
       openedExpansion: null as string | null,
       userEmail: '' as string,
+      termsNotSuitable: false as boolean,
     };
   },
 
@@ -275,6 +284,31 @@ export default defineComponent({
   },
 
   methods: {
+    chooseEmptyDate() {
+      if (!this.termsNotSuitable) {
+        this.clickedDate = null;
+        this.clickedDate2 = null;
+        this.dates2 = [];
+        return;
+      }
+      const emptyDate: dateSelection = {
+        id: -1,
+        date: 'Ozveme sa vám s ďalšími termínmi.',
+        raw: new Date('2031-01-08T00:00:00.000Z'),
+        block: 0,
+      };
+      const emptyDate2: dateSelection = {
+        id: -2,
+        date: 'Ozveme sa vám s ďalšími termínmi.',
+        raw: new Date('2031-01-16T00:00:00.000Z'),
+        block: 0,
+      };
+      if (emptyDate && emptyDate2) {
+        this.clickedDate = emptyDate;
+        this.clickedDate2 = emptyDate2;
+        this.dates2 = [];
+      }
+    },
     openEmailPopup() {
       console.log('Opening email popup');
       this.emailInput = this.userEmail || '';
@@ -449,6 +483,7 @@ export default defineComponent({
         });
       this.clickedDate = null;
       this.clickedDate2 = null;
+      this.termsNotSuitable = false;
     },
 
     getDates() {
